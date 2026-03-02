@@ -33,25 +33,34 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Set the path to the dependencies folder from the top level folder
 set(DEPENDENCIES_DIR "${CMAKE_SOURCE_DIR}/dependencies")
-# Note to self: include is where the dependency header files live 
-# and lib is where the libraries are
 
-# The name of the main object file that can be used to run this project
+# Load CMake's built-in FetchContent module
+include(FetchContent)
+
+# Register protobuf as a dependency
+FetchContent_Declare(
+    protobuf
+    GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+    GIT_TAG v34.0
+    GIT_SHALLOW 1 # if true, only fetch the latest commit, no full history
+)
+
+# Download the source and place inside the _deps subfolder
+FetchContent_MakeAvailable(protobuf)
+# The name of the main object file used to run this project once built
 add_executable(${PROJECT_NAME})
-#add_subdirectory(lib)
-#add_subdirectory(include)
 target_sources(${PROJECT_NAME}
-  PRIVATE
+    PRIVATE
     src/syrpc.cpp
 )
 
-#add_library()
-#target_link_libraries()
 # Additional compiler flags
-target_compile_options(${PROJECT_NAME} 
+target_compile_options(${PROJECT_NAME}
     PRIVATE
     -Wall
     -Wno-deprecated
     -fdiagnostics-color=always
     -g
 )
+
+target_link_libraries(${PROJECT_NAME} PRIVATE protobuf::libprotobuf)
