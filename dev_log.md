@@ -24,3 +24,7 @@ CMake makes a lot more sense once I stopped thinking in terms of include folders
 - Complete Protobuf integration
 - Generate `.proto` sources automatically
 - Begin designing the SYRPC message schema
+
+## Monday, March 2
+
+Today, I tackled a pain point that I was dealing with. I wanted to simplify the commands I use to run or build the project and my research landed on [direnv](https://direnv.net/), a very convenient tool for setting up custom commands for specific directories. After about 1h of struggling, I managed to get it to work. The outcome is that now I can simply type `build`or `run`to run or build the project.

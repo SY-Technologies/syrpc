@@ -1,0 +1,15 @@
+#!/bin/bash
+
+BUILD_DIR="./build"
+EXECUTABLE="syrpc"
+
+run() {
+    # Build first if no build directory exists
+    if [ ! -d "$BUILD_DIR" ]; then
+        build
+    fi
+
+    "$BUILD_DIR/$EXECUTABLE"
+}
+
+run

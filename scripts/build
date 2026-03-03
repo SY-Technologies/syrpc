@@ -1,0 +1,16 @@
+#!/bin/bash
+
+BUILD_DIR="./build"
+EXECUTABLE="syrpc"
+
+build() {
+    # Remove existing build directory if any
+    if [ -d "$BUILD_DIR" ]; then
+        rm -rf "$BUILD_DIR"
+    fi
+
+    cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug
+    cmake --build "$BUILD_DIR" --parallel
+}
+
+build
