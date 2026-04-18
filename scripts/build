@@ -1,16 +1,81 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Build helper for local development.
+#
+# Usage:
+#   ./scripts/build             # Debug build (library target)
+#   ./scripts/build --release   # Release build
+#   ./scripts/build --clean     # Remove build directory first
+#   ./scripts/build --configure-only
+#   ./scripts/build --reconfigure
+#   ./scripts/build --target syrpc_server
+#   ./scripts/build --target syrpc_client
+#   ./scripts/build --all       # Build library + server/client dev binaries
 
 BUILD_DIR="./build"
-EXECUTABLE="syrpc"
+BUILD_TYPE="Debug"
+CLEAN=false
+CONFIGURE_ONLY=false
+RECONFIGURE=false
+TARGET="syrpc"
+BUILD_ALL=false
 
-build() {
-    # Remove existing build directory if any
-    if [ -d "$BUILD_DIR" ]; then
-        rm -rf "$BUILD_DIR"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --release)
+            BUILD_TYPE="Release"
+            ;;
+        --debug)
+            BUILD_TYPE="Debug"
+            ;;
+        --clean)
+            CLEAN=true
+            ;;
+        --configure-only)
+            CONFIGURE_ONLY=true
+            ;;
+        --reconfigure)
+            RECONFIGURE=true
+            ;;
+        --target)
+            if [[ $# -lt 2 ]]; then
+                echo "Missing value for --target (expected: syrpc | syrpc_server | syrpc_client)"
+                exit 1
+            fi
+            TARGET="$2"
+            shift
+            ;;
+        --all)
+            BUILD_ALL=true
+            ;;
+        -h|--help)
+            sed -n '1,15p' "$0"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+# Keep the clean step explicit so accidental data loss is less likely.
+if [[ "$CLEAN" == true && -d "$BUILD_DIR" ]]; then
+    rm -rf "$BUILD_DIR"
+fi
+
+# Configure only when needed (first run) or when explicitly requested.
+if [[ "$RECONFIGURE" == true || ! -f "${BUILD_DIR}/CMakeCache.txt" ]]; then
+    cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+fi
+
+if [[ "$CONFIGURE_ONLY" == false ]]; then
+    # Build library + dev binaries when requested, otherwise build one target.
+    if [[ "$BUILD_ALL" == true ]]; then
+        cmake --build "$BUILD_DIR" --target syrpc syrpc_server syrpc_client --parallel
+    else
+        cmake --build "$BUILD_DIR" --target "$TARGET" --parallel
     fi
-
-    cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug
-    cmake --build "$BUILD_DIR" --parallel
-}
-
-build
+fi

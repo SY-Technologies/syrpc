@@ -1,15 +1,94 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run helper for local development.
+#
+# Usage:
+#   ./scripts/run               # Run dev server (builds only if missing)
+#   ./scripts/run --build       # Force build before run
+#   ./scripts/run --release     # Use release build mode if build is needed
+#   ./scripts/run --client      # Run dev client mode
+#   ./scripts/run --no-build    # Never build, fail if executable is missing
+#   ./scripts/run --port 9000   # Override port
+#   ./scripts/run --host 127.0.0.1 # Override client host
 
 BUILD_DIR="./build"
-EXECUTABLE="syrpc"
+EXECUTABLE="syrpc_server"
+MODE="server"
+HOST="127.0.0.1"
+PORT="8080"
+NO_BUILD=false
+FORCE_BUILD=false
+BUILD_MODE_ARG="--debug"
 
-run() {
-    # Build first if no build directory exists
-    if [ ! -d "$BUILD_DIR" ]; then
-        build
-    fi
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --client)
+            MODE="client"
+            ;;
+        --server)
+            MODE="server"
+            ;;
+        --release)
+            BUILD_MODE_ARG="--release"
+            ;;
+        --debug)
+            BUILD_MODE_ARG="--debug"
+            ;;
+        --build)
+            FORCE_BUILD=true
+            ;;
+        --no-build)
+            NO_BUILD=true
+            ;;
+        --host)
+            if [[ $# -lt 2 ]]; then
+                echo "Missing value for --host"
+                exit 1
+            fi
+            HOST="$2"
+            shift
+            ;;
+        --port)
+            if [[ $# -lt 2 ]]; then
+                echo "Missing value for --port"
+                exit 1
+            fi
+            PORT="$2"
+            shift
+            ;;
+        -h|--help)
+            sed -n '1,18p' "$0"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            exit 1
+            ;;
+    esac
+    shift
+done
 
-    "$BUILD_DIR/$EXECUTABLE"
-}
+TARGET_PATH="${BUILD_DIR}/${EXECUTABLE}"
 
-run
+if [[ "$MODE" == "client" ]]; then
+    EXECUTABLE="syrpc_client"
+    TARGET_PATH="${BUILD_DIR}/${EXECUTABLE}"
+fi
+
+# Build when forced, or when the executable is missing.
+if [[ "$NO_BUILD" == false && ( "$FORCE_BUILD" == true || ! -x "$TARGET_PATH" ) ]]; then
+    "$(dirname "$0")/build" "$BUILD_MODE_ARG" --target "$EXECUTABLE"
+fi
+
+if [[ ! -x "$TARGET_PATH" ]]; then
+    echo "Executable not found at ${TARGET_PATH}. Run ./scripts/build first."
+    exit 1
+fi
+
+echo "Running ${EXECUTABLE}..."
+if [[ "$MODE" == "server" ]]; then
+    exec "$TARGET_PATH" "$PORT"
+else
+    exec "$TARGET_PATH" "$HOST" "$PORT"
+fi
