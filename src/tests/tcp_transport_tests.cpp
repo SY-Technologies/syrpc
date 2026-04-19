@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "tcp_transport.hpp"
+#include "syrpc/transport/tcp_transport.hpp"
 
 // Helper: reserve a free localhost port for tests.
 static uint16_t find_free_port() {

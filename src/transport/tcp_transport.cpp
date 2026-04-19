@@ -9,7 +9,7 @@
 #include <stdexcept> // for standard exception classes
 #include <cstring>
 #include <sstream>
-#include "tcp_transport.hpp"
+#include "syrpc/transport/tcp_transport.hpp"
 
 //Note to self: documentation followed--> https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf
 

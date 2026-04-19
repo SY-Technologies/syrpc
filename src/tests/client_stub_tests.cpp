@@ -4,8 +4,8 @@
 #include <string>
 #include <utility>
 
-#include "client_stub.hpp"
-#include "itransport.hpp"
+#include "syrpc/stubs/client/client_stub.hpp"
+#include "syrpc/transport/itransport.hpp"
 
 class FakeClientTransport : public ITransport {
 public:

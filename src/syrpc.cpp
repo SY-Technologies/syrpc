@@ -2,8 +2,8 @@
 #include <memory>
 #include <string>
 
-#include "server_stub.hpp"
-#include "tcp_transport.hpp"
+#include "syrpc/stubs/server/server_stub.hpp"
+#include "syrpc/transport/tcp_transport.hpp"
 
 int main(int argc, char* argv[]) {
     try {

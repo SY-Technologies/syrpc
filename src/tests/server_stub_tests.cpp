@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "server_stub.hpp"
-#include "itransport.hpp"
+#include "syrpc/stubs/server/server_stub.hpp"
+#include "syrpc/transport/itransport.hpp"
 
 struct StopServerLoop : public std::runtime_error {
     StopServerLoop() : std::runtime_error("stop server loop") {}

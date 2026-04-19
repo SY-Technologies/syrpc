@@ -1,8 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
-#include "server_stub.hpp"
-#include "tcp_transport.hpp"
+#include "syrpc/stubs/server/server_stub.hpp"
 
 ServerStub::ServerStub(ConnectionFactory factory) : factory(std::move(factory)) {};
 

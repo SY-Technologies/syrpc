@@ -1,8 +1,7 @@
 #include <map>
 #include <utility>
 #include <memory>
-#include "client_stub.hpp"
-#include "tcp_transport.hpp"
+#include "syrpc/stubs/client/client_stub.hpp"
 
 ClientStub::ClientStub(std::unique_ptr<ITransport> transport) : transport(std::move(transport)) {};
 

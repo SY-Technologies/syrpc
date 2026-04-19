@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <string>
-#include "dispatcher.hpp"
+#include "syrpc/dispatcher/dispatcher.hpp"
 
 //TEST(TestSuiteName,TestName)
 TEST(DispatcherTest, DispatchCallsRegisteredHandler) {

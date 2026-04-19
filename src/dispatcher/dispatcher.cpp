@@ -1,6 +1,6 @@
 #include <string>
 #include <stdexcept>
-#include "dispatcher.hpp"
+#include "syrpc/dispatcher/dispatcher.hpp"
 
 Dispatcher::Dispatcher():handlers_map(){};
 Dispatcher::~Dispatcher(){
