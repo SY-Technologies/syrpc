@@ -77,10 +77,100 @@ This installs:
 
 ### Use in Another CMake Project
 
+This is the complete flow for reusing SYRPC in a different CMake project.
+
+#### Step 1: Build and install SYRPC
+
+From this SYRPC repository:
+
+```bash
+cmake -S . -B build \
+  -DBUILD_TESTING=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DSYRPC_BUILD_SHARED=OFF
+
+cmake --build build --target syrpc --parallel
+cmake --install build --prefix /usr/local
+```
+
+You can replace `/usr/local` with a user-local prefix like `$HOME/.local` if you do not want a system-wide install.
+
+#### Step 2: Add SYRPC to your consumer project CMake
+
+In the other project's `CMakeLists.txt`:
+
 ```cmake
+add_executable(my_app src/main.cpp)
 find_package(SYRPC REQUIRED CONFIG)
 target_link_libraries(my_app PRIVATE SYRPC::syrpc)
 ```
+
+What each part means:
+
+- `add_executable(my_app src/main.cpp)`
+  - `my_app` is your executable target name. You choose it.
+  - `src/main.cpp` is your source file list (one or many files).
+- `find_package(SYRPC REQUIRED CONFIG)`
+  - asks CMake to locate SYRPC's installed package config (`SYRPCConfig.cmake`).
+  - `REQUIRED` means configuration should fail immediately if SYRPC is not found.
+  - `CONFIG` means "use package config files" (the modern package export route).
+- `target_link_libraries(my_app PRIVATE SYRPC::syrpc)`
+  - links your target against the exported SYRPC library target.
+  - `SYRPC::syrpc` is the namespaced target name exported by this repo.
+  - `PRIVATE` means this dependency is used to build `my_app` only (standard choice for executables).
+
+#### Step 3: Tell CMake where SYRPC is installed (if needed)
+
+If SYRPC was installed in a non-default location, pass the prefix while configuring the consumer project:
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/usr/local
+cmake --build build --parallel
+```
+
+If you installed to `$HOME/.local`, use:
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=$HOME/.local
+cmake --build build --parallel
+```
+
+Notes:
+
+- CMake looks for `.../lib/cmake/SYRPC/SYRPCConfig.cmake` under each prefix.
+- Some systems may find `/usr/local` automatically; `CMAKE_PREFIX_PATH` makes it explicit and reproducible.
+
+#### Step 4: Use SYRPC headers in your code
+
+Use the namespaced public headers:
+
+```cpp
+#include "syrpc/transport/itransport.hpp"
+#include "syrpc/transport/tcp_transport.hpp"
+#include "syrpc/dispatcher/dispatcher.hpp"
+#include "syrpc/stubs/client/client_stub.hpp"
+#include "syrpc/stubs/server/server_stub.hpp"
+```
+
+#### Step 5: Static vs shared in downstream projects
+
+- If SYRPC is installed as static (`-DSYRPC_BUILD_SHARED=OFF`):
+  - simplest runtime behavior (no shared library loader issues)
+  - larger consumer binary size
+- If SYRPC is installed as shared (`-DSYRPC_BUILD_SHARED=ON`):
+  - smaller binaries, shared upgrades possible
+  - you must ensure runtime loader can find `libsyrpc` (`.dylib`/`.so`) on target machines
+
+#### Quick troubleshooting for consumer setup
+
+- `Could not find a package configuration file provided by "SYRPC"`:
+  - verify install was run
+  - verify prefix passed via `-DCMAKE_PREFIX_PATH=...`
+- Link errors mentioning unresolved SYRPC symbols:
+  - confirm `target_link_libraries(... SYRPC::syrpc)` is on the executable/library that uses SYRPC
+- Include errors for `syrpc/...` headers:
+  - ensure `find_package` succeeded
+  - do not include old flat header names; use `syrpc/...` paths
 
 ## Usage Guide
 
