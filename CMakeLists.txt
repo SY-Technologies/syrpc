@@ -62,14 +62,13 @@ set_target_properties(syrpc PROPERTIES
 #The include paths that should be used when compiling this target
 target_include_directories(syrpc
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/transport>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/dispatcher>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/stubs/client>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/stubs/server>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/syrpc/transport>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/syrpc/dispatcher>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/syrpc/stubs/client>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/syrpc/stubs/server>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/src/transport
+        ${PROJECT_SOURCE_DIR}/src/dispatcher
+        ${PROJECT_SOURCE_DIR}/src/stubs/client
+        ${PROJECT_SOURCE_DIR}/src/stubs/server
 )
 
 if(SYRPC_ENABLE_WARNINGS)
@@ -108,11 +107,7 @@ install(TARGETS syrpc
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(FILES src/transport/itransport.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/syrpc/transport)
-install(FILES src/transport/tcp_transport.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/syrpc/transport)
-install(FILES src/dispatcher/dispatcher.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/syrpc/dispatcher)
-install(FILES src/stubs/client/client_stub.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/syrpc/stubs/client)
-install(FILES src/stubs/server/server_stub.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/syrpc/stubs/server)
+install(DIRECTORY include/syrpc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(EXPORT SYRPCTargets
     FILE SYRPCTargets.cmake
@@ -147,6 +142,7 @@ if(BUILD_TESTING)
   FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
   # For MSVC runtime consistency, # For Windows: Prevent overriding the parent project's compiler/linker settings
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
